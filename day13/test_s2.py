@@ -35,12 +35,19 @@ def compare_between(lines, y0, y1):
     return False
 
 
-def get_column(lines, col):
-    return "".join([line[col] for line in lines])
-
-
-def get_columns(lines, start, end):
-    return [get_column(lines, y) for y in range(start, end)]
+def check_pattern(lines):
+    for y0, line in enumerate([lines[0], lines[-1]]):
+        for y1, line2 in enumerate(lines[1:-1]):
+            if diff_lines(line, line2) < 2:
+                y1 += 1
+                if y0 == 1:
+                    y0 = len(lines) - 1
+                print("Find" + str((y0, y1)))
+                if compare_between(lines, y0, y1):
+                    mirror = min(y0, y1) + abs(y0 - y1) // 2 + 1
+                    print("mirror at " + str(mirror))
+                    return mirror
+    return 0
 
 
 def compute(s: str) -> int:
@@ -51,37 +58,12 @@ def compute(s: str) -> int:
         print("")
         print(pattern)
         lines = pattern.splitlines()
-        for y0, line in enumerate([lines[0], lines[-1]]):
-            for y1, line2 in enumerate(lines[1:-1]):
-                if diff_lines(line, line2) < 2:
-                    y1 += 1
-                    if y0 == 1:
-                        y0 = len(lines) - 1
-                    print("Find" + str((y0, y1)))
-                    print(line)
-                    print(line2)
-                    if compare_between(lines, y0, y1):
-                        mirror = min(y0, y1) + abs(y0 - y1) // 2 + 1
-                        horizontal_mirrors += mirror
-                        print("mirror at " + str(mirror))
+        horizontal_mirrors += check_pattern(lines)
 
-        lines_rev = get_columns(lines, 0, len(lines[0]))
+        lines_rev = ["".join(l) for l in list(zip(*lines))]  # noqa: E741
         print("rev:")
         print("\n".join(lines_rev))
-        for y0, line in enumerate([lines_rev[0], lines_rev[-1]]):
-            for y1, line2 in enumerate(lines_rev[1:-1]):
-                if diff_lines(line, line2) < 2:
-                    y1 += 1
-                    if y0 == 1:
-                        y0 = len(lines_rev) - 1
-                    # print(str(y0) + ":" + str(line))
-                    # print(str(y1) + ":" + str(line2))
-                    print("Find" + str((y0, y1)))
-                    if compare_between(lines_rev, y0, y1):
-                        mirror = min(y0, y1) + abs(y0 - y1) // 2 + 1
-                        vertical_mirrors += mirror
-                        print("mirror at " + str(mirror))
-
+        vertical_mirrors += check_pattern(lines_rev)
     return 100 * horizontal_mirrors + vertical_mirrors
 
 
